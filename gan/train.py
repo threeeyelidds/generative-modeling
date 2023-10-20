@@ -30,6 +30,8 @@ def get_optimizers_and_schedulers(gen, disc):
     ##################################################################
     scheduler_discriminator = torch.optim.lr_scheduler.StepLR(optim_discriminator, 500, 0.1)
     scheduler_generator = torch.optim.lr_scheduler.StepLR(optim_generator, 100, 0.1)
+    scheduler_discriminator = torch.optim.lr_scheduler.StepLR(optim_discriminator, 500, 0.1)
+    scheduler_generator = torch.optim.lr_scheduler.StepLR(optim_generator, 100, 0.1)
     ##################################################################
     #                          END OF YOUR CODE                      #
     ##################################################################
@@ -106,6 +108,8 @@ def train_model(
                 ##################################################################
                 discrim_real = disc(train_batch)
                 discrim_fake = disc(gen(train_batch.shape[0]))
+                discrim_real = disc(train_batch)
+                discrim_fake = disc(gen(train_batch.shape[0]))
                 ##################################################################
                 #                          END OF YOUR CODE                      #
                 ##################################################################
@@ -158,6 +162,10 @@ def train_model(
                         # TODO 1.2: Generate samples using the generator.
                         # Make sure they lie in the range [0, 1]!
                         ##################################################################
+                        generated_samples = gen(batch_size)
+                        tensor_min = generated_samples.min()
+                        tensor_max = generated_samples.max()
+                        generated_samples = (generated_samples - tensor_min) / (tensor_max - tensor_min)
                         generated_samples = gen(batch_size)
                         tensor_min = generated_samples.min()
                         tensor_max = generated_samples.max()
