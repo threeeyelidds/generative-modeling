@@ -16,7 +16,8 @@ def compute_discriminator_loss(
     # Do not use discrim_interp, interp, lamb. They are placeholders
     # for Q1.5.
     ##################################################################
-    loss = None
+    loss = 1/2 * (discrim_real-1)**2 + 1/2 * (discrim_fake)**2
+    loss = torch.mean(loss,dim=0)
     ##################################################################
     #                          END OF YOUR CODE                      #
     ##################################################################
@@ -27,7 +28,8 @@ def compute_generator_loss(discrim_fake):
     ##################################################################
     # TODO: 1.4: Implement LSGAN loss for generator.
     ##################################################################
-    loss = None
+    loss = 1/2 * (discrim_fake-1)**2
+    loss = torch.mean(loss,dim=0)
     ##################################################################
     #                          END OF YOUR CODE                      #
     ##################################################################
