@@ -17,7 +17,10 @@ def compute_discriminator_loss(
     # Do not use discrim_interp, interp, lamb. They are placeholders
     # for Q1.5.
     ##################################################################
-    loss = None
+    discrim_fake = F.sigmoid(discrim_fake)
+    discrim_real = F.sigmoid(discrim_real)
+    loss = torch.log(discrim_real) + torch.log(1-discrim_fake)
+    loss = torch.mean(loss,dim=0)
     ##################################################################
     #                          END OF YOUR CODE                      #
     ##################################################################
@@ -28,7 +31,9 @@ def compute_generator_loss(discrim_fake):
     ##################################################################
     # TODO 1.3: Implement GAN loss for the generator.
     ##################################################################
-    loss = None
+    mapped_output = (discrim_fake + 1) / 2
+    # Compute the loss
+    loss = -torch.mean(torch.log(mapped_output))
     ##################################################################
     #                          END OF YOUR CODE                      #
     ##################################################################

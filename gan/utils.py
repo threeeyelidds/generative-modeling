@@ -40,7 +40,9 @@ def interpolate_latent_space(gen, path):
     # 3. Save out an image holding all 100 samples.
     # Use torchvision.utils.save_image to save out the visualization.
     ##################################################################
-    pass
+    samples = torch.zeros(100,128).cuda()
+    samples[0:100,0]=torch.linspace(-1,1,100)
+    samples[0:100,1]=torch.linspace(-1,1,100)
     ##################################################################
     #                          END OF YOUR CODE                      #
     ##################################################################

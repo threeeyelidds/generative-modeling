@@ -28,8 +28,8 @@ def get_optimizers_and_schedulers(gen, disc):
     # The learning rate for the generator should be decayed to 0 over
     # 100K iterations.
     ##################################################################
-    scheduler_discriminator = None
-    scheduler_generator = None
+    scheduler_discriminator = torch.optim.lr_scheduler.StepLR(optim_discriminator, 500, 0.1)
+    scheduler_generator = torch.optim.lr_scheduler.StepLR(optim_generator, 100, 0.1)
     ##################################################################
     #                          END OF YOUR CODE                      #
     ##################################################################
@@ -96,7 +96,6 @@ def train_model(
         for train_batch in train_loader:
             with torch.cuda.amp.autocast(enabled=amp_enabled):
                 train_batch = train_batch.cuda()
-                
                 ####################### UPDATE DISCRIMINATOR #####################
                 ##################################################################
                 # TODO 1.2: compute generator, discriminator, and interpolated outputs
@@ -105,8 +104,8 @@ def train_model(
                 # 2. Compute discriminator output on the train batch.
                 # 3. Compute the discriminator output on the generated data.
                 ##################################################################
-                discrim_real = None
-                discrim_fake = None
+                discrim_real = disc(train_batch)
+                discrim_fake = disc(gen(train_batch.shape[0]))
                 ##################################################################
                 #                          END OF YOUR CODE                      #
                 ##################################################################
@@ -136,8 +135,8 @@ def train_model(
                     # TODO 1.2: Compute generator and discriminator output on
                     # generated data.
                     ###################################################################
-                    fake_batch = None
-                    discrim_fake = None
+                    fake_batch = gen(batch_size)
+                    discrim_fake = disc(fake_batch)
                     ##################################################################
                     #                          END OF YOUR CODE                      #
                     ##################################################################
@@ -156,7 +155,10 @@ def train_model(
                         # TODO 1.2: Generate samples using the generator.
                         # Make sure they lie in the range [0, 1]!
                         ##################################################################
-                        generated_samples = None
+                        generated_samples = gen(batch_size)
+                        tensor_min = generated_samples.min()
+                        tensor_max = generated_samples.max()
+                        generated_samples = (generated_samples - tensor_min) / (tensor_max - tensor_min)
                         ##################################################################
                         #                          END OF YOUR CODE                      #
                         ##################################################################

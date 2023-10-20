@@ -18,14 +18,22 @@ class Encoder(nn.Module):
     """
     def __init__(self, input_shape, latent_dim):
         super().__init__()
-        self.input_shape = input_shape
+        self.input_shape = input_shape[0]
         self.latent_dim = latent_dim
         ##################################################################
         # TODO 2.1: Set up the network layers. First create the self.convs.
         # Then create self.fc with output dimension == self.latent_dim
         ##################################################################
-        self.convs = None
-        self.fc = None
+        self.convs = nn.Sequential(
+            nn.Conv2d(3, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
+            nn.ReLU(),
+            nn.Conv2d(32, 64, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1)),
+            nn.ReLU(),
+            nn.Conv2d(64, 128, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1)),
+            nn.ReLU(),
+            nn.Conv2d(128, 256, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+        )
+        self.fc = nn.Linear((self.input_shape//8)**2*256, self.latent_dim)
         ##################################################################
         #                          END OF YOUR CODE                      #
         ##################################################################
@@ -35,7 +43,10 @@ class Encoder(nn.Module):
         # TODO 2.1: Forward pass through the network, output should be
         # of dimension == self.latent_dim
         ##################################################################
-        pass
+        x = self.convs(x)
+        x = x.reshape(x.shape[0], -1)
+        x = self.fc(x)
+        return x
         ##################################################################
         #                          END OF YOUR CODE                      #
         ##################################################################
@@ -47,7 +58,7 @@ class VAEEncoder(Encoder):
         # TODO 2.4: Fill in self.fc, such that output dimension is
         # 2*self.latent_dim
         ##################################################################
-        self.fc = None
+        self.fc = nn.Linear(latent_dim, 2*self.latent_dim)
         ##################################################################
         #                          END OF YOUR CODE                      #
         ##################################################################
@@ -81,15 +92,24 @@ class Decoder(nn.Module):
     def __init__(self, latent_dim, output_shape):
         super().__init__()
         self.latent_dim = latent_dim
-        self.output_shape = output_shape
+        self.output_shape = output_shape[0]
 
         ##################################################################
         # TODO 2.1: Set up the network layers. First, compute
         # self.base_size, then create the self.fc and self.deconvs.
         ##################################################################
-        self.base_size = 0
-        self.deconvs = None
-        self.fc = None
+        self.base_size = self.output_shape//8
+        self.deconvs = nn.Sequential(
+            nn.ReLU(),
+            nn.ConvTranspose2d(256, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1)),
+            nn.ReLU(),
+            nn.ConvTranspose2d(128, 64, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1)),
+            nn.ReLU(),
+            nn.ConvTranspose2d(64, 32, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1)),
+            nn.ReLU(),
+            nn.Conv2d(32, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        self.fc = nn.Linear(latent_dim, (self.base_size)**2*256)
         ##################################################################
         #                          END OF YOUR CODE                      #
         ##################################################################
@@ -100,7 +120,9 @@ class Decoder(nn.Module):
         # TODO 2.1: Forward pass through the network, first through
         # self.fc, then self.deconvs.
         ##################################################################
-        pass
+        x = self.fc(z).reshape(z.shape[0], 256, self.base_size, self.base_size)
+        x = self.deconvs(x)
+        return x
         ##################################################################
         #                          END OF YOUR CODE                      #
         ##################################################################

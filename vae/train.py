@@ -18,7 +18,9 @@ def ae_loss(model, x):
     ##################################################################
     # TODO 2.2: Fill in MSE loss between x and its reconstruction.
     ##################################################################
-    loss = None
+    loss = (x-model(x))**2
+    loss = torch.sum(loss,dim=1)
+    loss = torch.mean(loss,dim=0)
     ##################################################################
     #                          END OF YOUR CODE                      #
     ##################################################################
@@ -38,9 +40,12 @@ def vae_loss(model, x, beta = 1):
     # closed form, you can find the formula here:
     # (https://stats.stackexchange.com/questions/318748/deriving-the-kl-divergence-loss-for-vaes).
     ##################################################################
-    total_loss = None
-    recon_loss = None
-    kl_loss = None
+    recon_loss = ae_loss(model, x)
+    mu = x.mean(dim=0)
+    sigma = x.std(dim=0)
+    kl_loss = -0.5*torch.sum(1+torch.log(sigma**2)-mu**2-sigma**2,dim=1)
+    kl_loss = torch.mean(kl_loss,dim=0)
+    total_loss = recon_loss + beta*kl_loss
     ##################################################################
     #                          END OF YOUR CODE                      #
     ##################################################################
