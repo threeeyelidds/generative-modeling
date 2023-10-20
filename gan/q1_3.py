@@ -21,8 +21,15 @@ def compute_discriminator_loss(
     # discrim_real = F.sigmoid(discrim_real)
     # print(discrim_fake)
     # print(discrim_real)
-    loss = torch.log(discrim_real) + torch.log(1-discrim_fake)
-    loss = torch.mean(loss,dim=0)
+    # loss = torch.log(discrim_real) + torch.log(1-discrim_fake)
+    # loss = torch.mean(loss,dim=0)
+    loss_real = F.binary_cross_entropy_with_logits(discrim_real, torch.ones_like(discrim_real))
+    
+    # Loss for fake images
+    loss_fake = F.binary_cross_entropy_with_logits(discrim_fake, torch.zeros_like(discrim_fake))
+    
+    # Total discriminator loss
+    loss = loss_real + loss_fake
     ##################################################################
     #                          END OF YOUR CODE                      #
     ##################################################################
@@ -37,7 +44,9 @@ def compute_generator_loss(discrim_fake):
     # mapped_output = (discrim_fake + 1) / 2
     # Compute the loss
     # discrim_fake = F.sigmoid(discrim_fake)
-    loss = torch.mean(torch.log(1-discrim_fake),dim=0)
+    # loss = torch.mean(torch.log(1-discrim_fake),dim=0)
+    loss = F.binary_cross_entropy_with_logits(discrim_fake, torch.ones_like(discrim_fake))
+
     ##################################################################
     #                          END OF YOUR CODE                      #
     ##################################################################

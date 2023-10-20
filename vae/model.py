@@ -18,7 +18,7 @@ class Encoder(nn.Module):
     """
     def __init__(self, input_shape, latent_dim):
         super().__init__()
-        self.input_shape = input_shape[0]
+        self.input_shape = input_shape[1]
         self.latent_dim = latent_dim
         ##################################################################
         # TODO 2.1: Set up the network layers. First create the self.convs.
@@ -59,6 +59,7 @@ class VAEEncoder(Encoder):
         # 2*self.latent_dim
         ##################################################################
         self.fc = nn.Linear(latent_dim, 2*self.latent_dim)
+        self.encoder = Encoder(input_shape=input_shape,latent_dim=latent_dim)
         ##################################################################
         #                          END OF YOUR CODE                      #
         ##################################################################
@@ -68,8 +69,10 @@ class VAEEncoder(Encoder):
         # TODO 2.1: Forward pass through the network, should return a
         # tuple of 2 tensors, mu and log_std
         ##################################################################
-        mu = None
-        log_std = None
+        x = self.encoder(x)
+        x = self.fc(x)
+        mu = x[:,:self.latent_dim]
+        log_std = x[:,self.latent_dim:]
         ##################################################################
         #                          END OF YOUR CODE                      #
         ##################################################################
@@ -92,8 +95,7 @@ class Decoder(nn.Module):
     def __init__(self, latent_dim, output_shape):
         super().__init__()
         self.latent_dim = latent_dim
-        self.output_shape = output_shape[0]
-
+        self.output_shape = output_shape[1]
         ##################################################################
         # TODO 2.1: Set up the network layers. First, compute
         # self.base_size, then create the self.fc and self.deconvs.
@@ -120,7 +122,8 @@ class Decoder(nn.Module):
         # TODO 2.1: Forward pass through the network, first through
         # self.fc, then self.deconvs.
         ##################################################################
-        x = self.fc(z).reshape(z.shape[0], 256, self.base_size, self.base_size)
+        x = self.fc(z)
+        x = x.reshape(z.shape[0], 256, self.base_size, self.base_size)
         x = self.deconvs(x)
         return x
         ##################################################################
