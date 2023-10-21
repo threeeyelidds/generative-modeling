@@ -37,7 +37,6 @@ def compute_discriminator_loss(
     # Compute the gradient penalty
     loss_pt2 = ((gradients.norm(2, dim=1) - 1) ** 2).mean()
     loss = loss_pt1 + lamb*loss_pt2
-    print(loss)
     ##################################################################
     #                          END OF YOUR CODE                      #
     ##################################################################

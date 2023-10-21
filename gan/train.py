@@ -28,8 +28,8 @@ def get_optimizers_and_schedulers(gen, disc):
     # The learning rate for the generator should be decayed to 0 over
     # 100K iterations.
     ##################################################################
-    lambda_disc = lambda epoch: 1 - min(epoch / 500_000, 1 - 1e-6)
-    lambda_gen = lambda epoch: 1 - min(epoch / 100_000, 1 - 1e-6)
+    lambda_disc = lambda epoch: 1 - epoch / 500_000
+    lambda_gen = lambda epoch: 1 - epoch / 100_000
     scheduler_discriminator = torch.optim.lr_scheduler.LambdaLR(optim_discriminator, lr_lambda=lambda_disc)
     scheduler_generator = torch.optim.lr_scheduler.LambdaLR(optim_generator, lr_lambda=lambda_gen)
 
