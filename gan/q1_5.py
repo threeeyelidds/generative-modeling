@@ -26,9 +26,9 @@ def compute_discriminator_loss(
         outputs=discrim_interp,
         inputs=interp,
         grad_outputs=torch.ones_like(discrim_interp),
-        # create_graph=True, 
-        # retain_graph=True, 
-        # only_inputs=True,
+        create_graph=True, 
+        retain_graph=True, 
+        only_inputs=True,
     )[0]
 
     # Flatten the gradients so we can compute the norm over all dimensions except the batch
