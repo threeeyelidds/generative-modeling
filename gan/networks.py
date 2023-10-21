@@ -62,7 +62,10 @@ class DownSampleConv2D(torch.jit.ScriptModule):
         ##################################################################
         x = self.pixel_unshuffle(x)
         channel = x.shape[1]
-        x = torch.stack(x.split(channel//int(self.downscale_ratio**2),dim=1))
+        # x = torch.stack(x.split(channel//int(self.downscale_ratio**2),dim=1))
+        split_tensors = x.split(channel // int(self.downscale_ratio ** 2), dim=1)
+        reshaped_tensors = [tensor.unsqueeze(dim=0) for tensor in split_tensors]
+        x = torch.cat(reshaped_tensors, dim=0)
         x = torch.mean(x, dim=0)
         return self.conv(x)
         ##################################################################

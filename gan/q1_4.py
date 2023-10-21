@@ -18,8 +18,6 @@ def compute_discriminator_loss(
     ##################################################################
     loss = 1/2 * (discrim_real-1)**2 + 1/2 * (discrim_fake)**2
     loss = torch.mean(loss,dim=0)
-    loss = 1/2 * (discrim_real-1)**2 + 1/2 * (discrim_fake)**2
-    loss = torch.mean(loss,dim=0)
     ##################################################################
     #                          END OF YOUR CODE                      #
     ##################################################################

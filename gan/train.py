@@ -28,10 +28,11 @@ def get_optimizers_and_schedulers(gen, disc):
     # The learning rate for the generator should be decayed to 0 over
     # 100K iterations.
     ##################################################################
-    scheduler_discriminator = torch.optim.lr_scheduler.StepLR(optim_discriminator, 500, 0.1)
-    scheduler_generator = torch.optim.lr_scheduler.StepLR(optim_generator, 100, 0.1)
-    scheduler_discriminator = torch.optim.lr_scheduler.StepLR(optim_discriminator, 500, 0.1)
-    scheduler_generator = torch.optim.lr_scheduler.StepLR(optim_generator, 100, 0.1)
+    lambda_disc = lambda epoch: 1 - min(epoch / 500_000, 1 - 1e-6)
+    lambda_gen = lambda epoch: 1 - min(epoch / 100_000, 1 - 1e-6)
+    scheduler_discriminator = torch.optim.lr_scheduler.LambdaLR(optim_discriminator, lr_lambda=lambda_disc)
+    scheduler_generator = torch.optim.lr_scheduler.LambdaLR(optim_generator, lr_lambda=lambda_gen)
+
     ##################################################################
     #                          END OF YOUR CODE                      #
     ##################################################################
@@ -107,9 +108,8 @@ def train_model(
                 # 3. Compute the discriminator output on the generated data.
                 ##################################################################
                 discrim_real = disc(train_batch)
-                discrim_fake = disc(gen(train_batch.shape[0]))
-                discrim_real = disc(train_batch)
-                discrim_fake = disc(gen(train_batch.shape[0]))
+                fake_data = gen(train_batch.shape[0])
+                discrim_fake = disc(fake_data)
                 ##################################################################
                 #                          END OF YOUR CODE                      #
                 ##################################################################
@@ -118,8 +118,9 @@ def train_model(
                 # TODO 1.5 Compute the interpolated batch and run the
                 # discriminator on it.
                 ###################################################################
-                interp = None
-                discrim_interp = None
+                alpha = torch.rand(train_batch.size(0), 1, 1, 1).cuda().expand_as(train_batch)
+                interp = alpha * train_batch + (1 - alpha) * fake_data
+                discrim_interp = disc(interp)
                 ##################################################################
                 #                          END OF YOUR CODE                      #
                 ##################################################################
@@ -139,11 +140,8 @@ def train_model(
                     # TODO 1.2: Compute generator and discriminator output on
                     # generated data.
                     ###################################################################
-                    generated_samples = gen(batch_size)
-                    tensor_min = generated_samples.min()
-                    tensor_max = generated_samples.max()
-                    generated_samples = (generated_samples - tensor_min) / (tensor_max - tensor_min)
-                    discrim_fake = disc(generated_samples)
+                    fake_data = gen(train_batch.shape[0])
+                    discrim_fake = disc(fake_data)
                     ##################################################################
                     #                          END OF YOUR CODE                      #
                     ##################################################################
@@ -162,10 +160,6 @@ def train_model(
                         # TODO 1.2: Generate samples using the generator.
                         # Make sure they lie in the range [0, 1]!
                         ##################################################################
-                        generated_samples = gen(batch_size)
-                        tensor_min = generated_samples.min()
-                        tensor_max = generated_samples.max()
-                        generated_samples = (generated_samples - tensor_min) / (tensor_max - tensor_min)
                         generated_samples = gen(batch_size)
                         tensor_min = generated_samples.min()
                         tensor_max = generated_samples.max()
