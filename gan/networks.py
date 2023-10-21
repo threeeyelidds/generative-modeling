@@ -32,9 +32,6 @@ class UpSampleConv2D(torch.jit.ScriptModule):
         x_repeated = x.repeat(1,int(self.upscale_factor**2),1,1)
         x_scaled = self.pixel_shuffle(x_repeated)
         return self.conv(x_scaled)
-        x_repeated = x.repeat(1,int(self.upscale_factor**2),1,1)
-        x_scaled = self.pixel_shuffle(x_repeated)
-        return self.conv(x_scaled)
         ##################################################################
         #                          END OF YOUR CODE                      #
         ##################################################################
@@ -63,11 +60,6 @@ class DownSampleConv2D(torch.jit.ScriptModule):
         # 3. Take the average across dimension 0, apply convolution,
         # and return the output
         ##################################################################
-        x = self.pixel_unshuffle(x)
-        channel = x.shape[1]
-        x = torch.stack(x.split(channel//int(self.downscale_ratio**2),dim=1))
-        x = torch.mean(x, dim=0)
-        return self.conv(x)
         x = self.pixel_unshuffle(x)
         channel = x.shape[1]
         x = torch.stack(x.split(channel//int(self.downscale_ratio**2),dim=1))
@@ -129,9 +121,6 @@ class ResBlockUp(torch.jit.ScriptModule):
         input = x
         x = self.layers(x)
         return self.upsample_residual(input)+x
-        input = x
-        x = self.layers(x)
-        return self.upsample_residual(input)+x
         ##################################################################
         #                          END OF YOUR CODE                      #
         ##################################################################
@@ -183,10 +172,6 @@ class ResBlockDown(torch.jit.ScriptModule):
         x = self.layers(x)
         down_input = self.downsample_residual(input)
         return down_input+x
-        input = x
-        x = self.layers(x)
-        down_input = self.downsample_residual(input)
-        return down_input+x
         ##################################################################
         #                          END OF YOUR CODE                      #
         ##################################################################
@@ -227,8 +212,6 @@ class ResBlock(torch.jit.ScriptModule):
         # TODO 1.1: Forward the conv layers. Don't forget the residual
         # connection!
         ##################################################################
-        input = x
-        return input + self.layers(x)
         input = x
         return input + self.layers(x)
         ##################################################################
@@ -317,15 +300,6 @@ class Generator(torch.jit.ScriptModule):
         # been passed in. Don't forget to re-shape the output of the dense
         # layer into an image with the appropriate size!
         ##################################################################
-        batch_size = z.shape[0]
-        z = z.reshape(batch_size,-1)
-        z = self.dense(z).reshape(batch_size,128,4,4)
-        z = self.layers(z)
-        z = self.bn(z)
-        z = self.relu(z)
-        z = self.conv(z)
-        z = self.activation(z)
-        return z
         batch_size = z.shape[0]
         z = z.reshape(batch_size,-1)
         z = self.dense(z).reshape(batch_size,128,4,4)
@@ -427,12 +401,7 @@ class Discriminator(torch.jit.ScriptModule):
         # dimensions after passing x through self.layers.
         ##################################################################
         x = self.layers(x)
-        
-        x = x.sum(dim=-1).sum(dim=-1)
-        return self.dense(x)
-        x = self.layers(x)
-        
-        x = x.sum(dim=-1).sum(dim=-1)
+        x = x.sum(dim=(-1,-2))
         return self.dense(x)
         ##################################################################
         #                          END OF YOUR CODE                      #
