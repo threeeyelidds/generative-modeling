@@ -33,8 +33,7 @@ class DiffusionModel(nn.Module):
         # TODO 3.1: Compute the cumulative products for current and
         # previous timesteps.
         ##################################################################
-        alphas_with_one = torch.cat([torch.ones_like(alphas[:1]).cuda(), alphas])
-        self.alphas_cumprod = torch.cumprod(alphas_with_one, dim=0)
+        self.alphas_cumprod = torch.cumprod(alphas, dim=0)
         self.alphas_cumprod_prev =  torch.cat([torch.ones_like(alphas[:1]).cuda(), self.alphas_cumprod[:-1]])
         ##################################################################
         # TODO 3.1: Pre-compute values needed for forward process.
@@ -48,9 +47,9 @@ class DiffusionModel(nn.Module):
         # TODO 3.1: Compute the coefficients for the mean.
         ##################################################################
         # This is coefficient of x_0 in the DDPM section
-        self.posterior_mean_coef1 = torch.sqrt(alphas)*(1-self.alphas_cumprod_prev)/(1-self.alphas_cumprod)
+        self.posterior_mean_coef1 = torch.sqrt(self.alphas_cumprod_prev)*self.betas/(1-self.alphas_cumprod)
         # This is coefficient of x_t in the DDPM section
-        self.posterior_mean_coef2 = torch.sqrt(self.alphas_cumprod_prev)*self.betas/(1-self.alphas_cumprod)
+        self.posterior_mean_coef2 = torch.sqrt(alphas)*(1-self.alphas_cumprod_prev)/(1-self.alphas_cumprod)
 
         ##################################################################
         # TODO 3.1: Compute posterior variance.
@@ -107,8 +106,8 @@ class DiffusionModel(nn.Module):
         # Hint: To do this, you will need a predicted x_0. You should've
         # already implemented a function to give you x_0 above!
         ##################################################################
-        x_0 = self.model_predictions(x, t)
-        posterior_mean, posterior_variance, posterior_log_variance_clipped = self.get_posterior_parameters(x_0, x, t)
+        _, x_0 = self.model_predictions(x, t)
+        posterior_mean, posterior_variance, _ = self.get_posterior_parameters(x_0, x, t)
         z = torch.randn_like(x)
         pred_img = posterior_mean + torch.sqrt(posterior_variance) * z
         
