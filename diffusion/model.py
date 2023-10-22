@@ -138,20 +138,23 @@ class DiffusionModel(nn.Module):
         # sampling process.
         ##################################################################
         # Step 1: Predict x_0 and the additive noise for tau_i
-        x_0 = None
+        x_0, pred_noise = model_predictions(img, tau_i)
 
         # Step 2: Extract \alpha_{\tau_{i - 1}} and \alpha_{\tau_{i}}
-        pass
+        alpha_tau_isub1 = extract(alphas_cumprod, tau_isub1, img.shape)
+        alpha_tau_i = extract(alphas_cumprod, tau_i, img.shape)
 
         # Step 3: Compute \sigma_{\tau_{i}}
-        pass
+        sigma_tau_i = eta*torch.sqrt(self.get_posterior_parameters(x_0, img, tau_i)[1])
 
         # Step 4: Compute the coefficient of \epsilon_{\tau_{i}}
-        pass
+        epsilon_coef = torch.sqrt(1-alpha_tau_isub1-sigma_tau_i**2)
 
         # Step 5: Sample from q(x_{\tau_{i - 1}} | x_{\tau_t}, x_0)
         # HINT: Use the reparameterization trick
-        img = None
+        z = torch.randn_like(img)
+        mu = torch.sqrt(alpha_tau_isub1)*x_0 + epsilon_coef*pred_noise
+        img = mu + sigma_tau_i*z
         ##################################################################
         #                          END OF YOUR CODE                      #
         ##################################################################
